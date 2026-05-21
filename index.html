@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毛孩星球 - 寵物分享交流平台</title>
+    <style>
+        /* --- 全域可愛風樣式 --- */
+        :root {
+            --primary-color: #FFB7B2; /* 肉墊粉 */
+            --secondary-color: #FFDAC1; /* 溫暖橘 */
+            --bg-color: #FFF9E6; /* 奶油黃底色 */
+            --text-color: #5D4037; /* 深咖啡色字體 */
+            --white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Microsoft JhengHei, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-bottom: 60px;
+        }
+
+        /* --- 導覽列 --- */
+        nav {
+            background-color: var(--primary-color);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--white);
+            cursor: pointer;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        .nav-links button {
+            background: var(--white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: var(--text-color);
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: transform 0.2s;
+        }
+
+        .nav-links button:hover {
+            transform: scale(1.05);
+            background-color: var(--secondary-color);
+        }
+
+        /* --- 區塊主體 --- */
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page {
+            display: none; /* 預設隱藏，靠 JS 切換 */
+            background: var(--white);
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 8px 16px rgba(93, 64, 55, 0.1);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #FF8B94;
+        }
+
+        /* --- 表單與按鈕外觀 --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="password"], textarea, select, input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 15px;
+            outline: none;
+            font-size: 16px;
+            background-color: #FFFDF9;
+        }
+
+        input:focus, textarea:focus, input[type="file"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        input[type="file"] {
+            padding: 8px;
+        }
+
+        .btn-block {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-block:hover {
+            transform: scale(1.02);
+            background-color: #FF8B94;
+        }
+
+        /* --- 🖼️ 圖形驗證碼專屬樣式 --- */
+        .captcha-container {
+            background-color: #FFF5F5;
+            border: 2px dashed #FFB7B2;
+            padding: 15px;
+            border-radius: 20px;
+            margin-top: 15px;
+        }
+
+        .captcha-flex {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            background-color: #eee;
+            border-radius: 10px;
+            cursor: pointer; /* 點擊圖片就能刷新 */
+            border: 1px solid #ddd;
+        }
+
+        .refresh-text {
+            font-size: 13px;
+            color: #FF8B94;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* --- 頭貼與使用者資訊顯示 --- */
+        .user-info-bar {
+            display: flex;
+            align-items: center;
+            background: #FFF0F0;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            font-size: 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            border: 2px solid var(--primary-color);
+        }
+
+        /* --- 貼文卡片設計 --- */
+        .post-card {
+            background: white;
+            border-radius: 25px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            border: 2px solid #FFE5E5;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .post-user-details h4 {
+            font-size: 16px;
+        }
+
+        .post-user-details span {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .post-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #FF8B94;
+        }
+
+        .post-content {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .post-img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 12px;
+        }
+
+        /* --- 留言區 --- */
+        .comment-section {
+            background: #FAF8F5;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 10px;
+        }
+
+        .comment-item {
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #E0E0E0;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .comment-form {
+            display: flex;
+            margin-top: 10px;
+            gap: 8px;
+        }
+
+        .comment-form input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #CCC;
+            border-radius: 10px;
+        }
+
+        .comment-form button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #postImgPreview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 15px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .auth-helper-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .auth-helper-links a {
+            color: #FF8B94;
+            text-decoration: none;
+        }
+        .auth-helper-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo" onclick="switchPage('lobbyPage')">🐾 毛孩星球</div>
+        <div class="nav-links" id="navLinks"></div>
+    </nav>
+
+    <div class="container">
+
+        <div id="authPage" class="page">
+            <h2 id="authTitle">歡迎來到毛孩星球 🐶</h2>
+            
+            <div id="registerFormBox">
+                <div class="form-group">
+                    <label>設定 ID (帳號)</label>
+                    <input type="text" id="regId" placeholder="例如: blackcat123">
+                </div>
+                <div class="form-group">
+                    <label>暱稱 (顯示名稱)</label>
+                    <input type="text" id="regName" placeholder="例如: 小黑貓的主人">
+                </div>
+                <div class="form-group">
+                    <label>密碼</label>
+                    <input type="password" id="regPassword" placeholder="請輸入密碼">
+                </div>
+                <div class="form-group">
+                    <label>🔑 安全密語（忘記帳密時的提示解答）</label>
+                    <input type="text" id="regSecret" placeholder="例如：我第一隻寵物的名字是小黑">
+                </div>
+                <div class="form-group">
+                    <label>選擇代表你的寵物頭貼</label>
+                    <select id="regAvatar">
+                        <option value="🐱">🐱 貓貓</option>
+                        <option value="🐶">🐶 狗狗</option>
+                        <option value="🐰">🐰 兔子</option>
+                        <option value="🐹">🐹 倉鼠</option>
+                        <option value="🦜">🦜 小鳥</option>
+                    </select>
+                </div>
+
+                <div class="captcha-container">
+                    <label style="display:block; margin-bottom:8px; font-weight:bold;">🤖 人類安全驗證</label>
+                    <div class="captcha-flex">
+                        <canvas id="captchaCanvas" width="120" height="40" onclick="drawCaptcha()"></canvas>
+                        <span class="refresh-text" onclick="drawCaptcha()">看不清？換一張</span>
+                    </div>
+                    <input type="text" id="regCaptchaInput" placeholder="請輸入圖中的英數驗證碼（不分大小寫）">
+                </div>
+
+                <button class="btn-block" style="margin-top: 20px;" onclick="handleRegister()">註冊並直接登入</button>
+                <div class="auth-helper-links">
+                    <span>已經有帳號了？ <a href="#" onclick="toggleAuthMode('login')">點此登入</a></span>
+                </div>
+            </div>
+
+            <div id="loginFormBox" style="display:none;">
+                <div class="form-group">
+                    <label>ID (帳號)</label>
+                    <input type="text" id="loginId" placeholder="輸入您的 ID">
+                </div>
+                <div class="form-group">
+                    <label>密碼</label>
+                    <input type="password" id="loginPassword" placeholder="輸入您的密碼">
+                </div>
+                <button class="btn-block" onclick="handleLogin()">登入</button>
+                <div class="auth-helper-links">
+                    <a href="#" onclick="toggleAuthMode('forgot')">❓ 忘記 ID 或密碼</a>
+                    <span>還沒有帳號？ <a href="#" onclick="toggleAuthMode('register')">點此註冊</a></span>
+                </div>
+            </div>
+
+            <div id="forgotFormBox" style="display:none;">
+                <p style="margin-bottom: 15px; font-size: 14px; color: #666;">請輸入您註冊時填寫的「暱稱」，並回答正確的「安全密語」來找回您的帳號資料。</p>
+                <div class="form-group">
+                    <label>註冊時的暱稱 (顯示名稱)</label>
+                    <input type="text" id="forgotName" placeholder="例如: 小黑貓的主人">
+                </div>
+                <div class="form-group">
+                    <label>您的安全密語是什麼？</label>
+                    <input type="text" id="forgotSecret" placeholder="請輸入當初設定的答案">
+                </div>
+                <button class="btn-block" onclick="handleFindAccount()">找回帳密 🔍</button>
+                <div class="auth-helper-links">
+                    <a href="#" onclick="toggleAuthMode('login')">← 返回登入頁面</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="profilePage" class="page">
+            <h2>我的個人首頁 🏡</h2>
+            <div class="user-info-bar">
+                <div class="avatar" id="profileAvatar">🐱</div>
+                <div>
+                    <h3 id="profileName">名稱</h3>
+                    <span id="profileId" style="color:#888;">@id</span>
+                </div>
+            </div>
+            <button class="btn-block" style="background-color: var(--secondary-color); color: #5D4037;" onclick="switchPage('addPostPage')">✨ 點我新增貼文</button>
+            <h3 style="margin: 25px 0 15px 0;">我發布過的貼文：</h3>
+            <div id="myPostsContainer"></div>
+        </div>
+
+        <div id="addPostPage" class="page">
+            <h2>分享你的寵物趣事 ✏️</h2>
+            <div class="user-info-bar">
+                <div class="avatar" id="postFormAvatar">🐱</div>
+                <div>
+                    <h3 id="postFormName">名稱</h3>
+                    <span id="postFormId" style="color:#888;">@id</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>發布主題</label>
+                <input type="text" id="postTitle" placeholder="例如：我家貓咪今天學會握手了！">
+            </div>
+            <div class="form-group">
+                <label>發布內容</label>
+                <textarea id="postContent" rows="5" placeholder="分享些什麼吧..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>上傳相片 (可不填)</label>
+                <input type="file" id="postImgFile" accept="image/*" onchange="previewImage(this)">
+                <img id="postImgPreview" src="#" alt="圖片預覽">
+            </div>
+            <button class="btn-block" onclick="handleCreatePost()">發布貼文 🎉</button>
+        </div>
+
+        <div id="lobbyPage" class="page active">
+            <h2>🐾 萌寵大廳分享區 🐾</h2>
+            <div id="allPostsContainer"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 初始化資料庫 ---
+        if (!localStorage.getItem('users')) localStorage.setItem('users', JSON.stringify({}));
+        if (!localStorage.getItem('posts')) localStorage.setItem('posts', JSON.stringify([]));
+
+        let currentUser = JSON.parse(sessionStorage.getItem('currentUser')) || null;
+        let correctCaptchaCode = ""; // 用來儲存當前正確的圖形驗證碼文字
+
+        // --- 頁面切換控制 ---
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'lobbyPage') renderLobby();
+            if (pageId === 'profilePage') renderProfile();
+            if (pageId === 'addPostPage') preparePostForm();
+            if (pageId === 'authPage') drawCaptcha(); // 切換到驗證頁面時重繪
+            
+            updateNavbar();
+            window.scrollTo(0,0);
+        }
+
+        // 切換 註冊/登入/忘記帳密 的表單顯示
+        function toggleAuthMode(mode) {
+            const title = document.getElementById('authTitle');
+            const regBox = document.getElementById('registerFormBox');
+            const loginBox = document.getElementById('loginFormBox');
+            const forgotBox = document.getElementById('forgotFormBox');
+
+            regBox.style.display = "none";
+            loginBox.style.display = "none";
+            forgotBox.style.display = "none";
+
+            if (mode === 'register') {
+                title.innerText = "歡迎來到毛孩星球 🐶";
+                regBox.style.display = "block";
+                drawCaptcha(); // 切換到註冊時生成驗證碼
+            } else if (mode === 'login') {
+                title.innerText = "歡迎回來 👋";
+                loginBox.style.display = "block";
+            } else if (mode === 'forgot') {
+                title.innerText = "找回小夥伴的密語 🕵️‍♂️";
+                forgotBox.style.display = "block";
+            }
+        }
+
+        // --- 🖼️ 核心功能：Canvas 繪製圖形驗證碼 ---
+        function drawCaptcha() {
+            const canvas = document.getElementById('captchaCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            // 清空畫布並填滿隨機淡色背景
+            ctx.fillStyle = `rgb(${240+Math.random()*15}, ${240+Math.random()*15}, ${240+Math.random()*15})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 隨機生成 4 碼英數字組合
+            const chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'; // 剔除容易混淆的 I, l, O, 0, 1
+            correctCaptchaCode = "";
+            for (let i = 0; i < 4; i++) {
+                correctCaptchaCode += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            // 繪製文字到 Canvas 上
+            for (let i = 0; i < correctCaptchaCode.length; i++) {
+                ctx.font = `${20 + Math.random() * 8}px Arial, sans-serif`; // 隨機字體大小
+                ctx.fillStyle = `rgb(${Math.random()*150}, ${Math.random()*150}, ${Math.random()*150})`; // 隨機深色文字
+                
+                // 稍微做點角度扭曲旋轉效果
+                ctx.save();
+                const x = 15 + i * 26;
+                const y = 25 + Math.random() * 8;
+                const deg = (Math.random() * 30 - 15) * Math.PI / 180; // 旋轉正負 15 度
+                ctx.translate(x, y);
+                ctx.rotate(deg);
+                ctx.fillText(correctCaptchaCode[i], 0, 0);
+                ctx.restore();
+            }
+
+            // 增加 4 條隨機干擾線
+            for (let i = 0; i < 4; i++) {
+                ctx.strokeStyle = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.stroke();
+            }
+
+            // 增加 30 個隨機噪點
+            for (let i = 0; i < 30; i++) {
+                ctx.fillStyle = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+                ctx.beginPath();
+                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // 同步清空輸入框
+            document.getElementById('regCaptchaInput').value = "";
+        }
+
+        // --- 導覽列更新 ---
+        function updateNavbar() {
+            const navLinks = document.getElementById('navLinks');
+            if (currentUser) {
+                navLinks.innerHTML = `
+                    <button onclick="switchPage('lobbyPage')">大廳</button>
+                    <button onclick="switchPage('profilePage')">個人首頁 (${currentUser.avatar})</button>
+                    <button onclick="handleLogout()" style="background:#FF8B94; color:white;">登出</button>
+                `;
+            } else {
+                navLinks.innerHTML = `
+                    <button onclick="switchPage('lobbyPage')">大廳</button>
+                    <button onclick="switchPage('authPage'); toggleAuthMode('login');">登入/註冊</button>
+                `;
+            }
+        }
+
+        // --- 功能：註冊 ---
+        function handleRegister() {
+            const id = document.getElementById('regId').value.trim();
+            const name = document.getElementById('regName').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const secret = document.getElementById('regSecret').value.trim();
+            const avatar = document.getElementById('regAvatar').value;
+            const captchaInput = document.getElementById('regCaptchaInput').value.trim();
+
+            if(!id || !name || !password || !secret) return alert('每個欄位都要填寫外，也別忘了安全密語唷！');
+            if(!captchaInput) return alert('請輸入圖形驗證碼！');
+
+            // 驗證圖形驗證碼（轉成小寫比對，不分大小寫）
+            if (captchaInput.toLowerCase() !== correctCaptchaCode.toLowerCase()) {
+                alert('❌ 圖形驗證碼輸入錯誤，請再試一次！');
+                drawCaptcha(); // 答錯即刷新圖示
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('users'));
+            if (users[id]) {
+                alert('這個 ID 已經被註冊過囉！');
+                drawCaptcha();
+                return;
+            }
+
+            // 存入本地資料庫
+            users[id] = { id, name, password, secret, avatar };
+            localStorage.setItem('users', JSON.stringify(users));
+
+            currentUser = users[id];
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            alert('註冊成功！已為您自動登入 🐾');
+            switchPage('profilePage');
+        }
+
+        // --- 功能：登入 ---
+        function handleLogin() {
+            const id = document.getElementById('loginId').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            let users = JSON.parse(localStorage.getItem('users'));
+            
+            if (users[id] && users[id].password === password) {
+                currentUser = users[id];
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                alert('登入成功，歡迎回來！');
+                switchPage('profilePage');
+            } else {
+                alert('ID 或密碼輸入錯誤唷！');
+            }
+        }
+
+        // --- 功能：找回功能 ---
+        function handleFindAccount() {
+            const name = document.getElementById('forgotName').value.trim();
+            const secret = document.getElementById('forgotSecret').value.trim();
+
+            if (!name || !secret) return alert('請填寫完整資訊以利搜尋！');
+
+            let users = JSON.parse(localStorage.getItem('users'));
+            let foundUser = null;
+
+            for (let id in users) {
+                if (users[id].name === name && users[id].secret === secret) {
+                    foundUser = users[id];
+                    break;
+                }
+            }
+
+            if (foundUser) {
+                alert(`✨ 找到囉！\n您的 ID (帳號) 是：${foundUser.id}\n您的 密碼 是：${foundUser.password}\n\n請牢記這次的資訊唷！🐾`);
+                toggleAuthMode('login');
+                document.getElementById('loginId').value = foundUser.id;
+            } else {
+                alert('❌ 找不到對應的資料，請檢查暱稱或安全密語是否輸入正確！');
+            }
+        }
+
+        // --- 功能：登出 ---
+        function handleLogout() {
+            currentUser = null;
+            sessionStorage.removeItem('currentUser');
+            alert('已成功登出！');
+            switchPage('lobbyPage');
+        }
+
+        // --- 功能：發文畫面準備 ---
+        function preparePostForm() {
+            if(!currentUser) return switchPage('authPage');
+            document.getElementById('postFormAvatar').innerText = currentUser.avatar;
+            document.getElementById('postFormName').innerText = currentUser.name;
+            document.getElementById('postFormId').innerText = '@' + currentUser.id;
+            document.getElementById('postImgPreview').style.display = 'none';
+            document.getElementById('postImgPreview').src = '#';
+        }
+
+        // --- 功能：圖片預覽 ---
+        function previewImage(input) {
+            const preview = document.getElementById('postImgPreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+            }
+        }
+
+        // --- 功能：發布貼文 ---
+        function handleCreatePost() {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            const fileInput = document.getElementById('postImgFile');
+
+            if (!title || !content) return alert('請輸入主題與內容唷！');
+
+            let posts = JSON.parse(localStorage.getItem('posts'));
+            const newPost = {
+                id: Date.now(),
+                userId: currentUser.id,
+                userName: currentUser.name,
+                userAvatar: currentUser.avatar,
+                title: title,
+                content: content,
+                imgUrl: '',
+                comments: []
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newPost.imgUrl = e.target.result;
+                    posts.unshift(newPost);
+                    try {
+                        localStorage.setItem('posts', JSON.stringify(posts));
+                        alert('發布成功！');
+                        document.getElementById('postTitle').value = '';
+                        document.getElementById('postContent').value = '';
+                        fileInput.value = '';
+                        document.getElementById('postImgPreview').style.display = 'none';
+                        switchPage('lobbyPage');
+                    } catch (e) {
+                        alert('圖片檔案太大，儲存空間不足，請換一張小一點的圖片試試看！');
+                    }
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                posts.unshift(newPost);
+                localStorage.setItem('posts', JSON.stringify(posts));
+                alert('發布成功！');
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+                switchPage('lobbyPage');
+            }
+        }
+
+        // --- 功能：渲染大廳分享區 ---
+        function renderLobby() {
+            const container = document.getElementById('allPostsContainer');
+            let posts = JSON.parse(localStorage.getItem('posts'));
+
+            if (posts.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999; margin-top:30px;">目前還沒有人發文，快來當第一個分享的人吧！</p>';
+                return;
+            }
+
+            container.innerHTML = posts.map(post => {
+                const imgHtml = post.imgUrl ? `<img class="post-img" src="${post.imgUrl}" onerror="this.style.display='none'">` : '';
+                const commentsHtml = post.comments.map(c => `
+                    <div class="comment-item">
+                        <strong>${c.userAvatar} ${c.userName}:</strong> ${c.text}
+                    </div>
+                `).join('');
+
+                const commentFormHtml = currentUser 
+                    ? `<div class="comment-form">
+                        <input type="text" id="comment-input-${post.id}" placeholder="留個言吧...">
+                        <button onclick="handleAddComment(${post.id})">送出</button>
+                       </div>`
+                    : `<div class="comment-form"><input type="text" placeholder="🔒 請先登入才能發表留言" disabled></div>`;
+
+                return `
+                    <div class="post-card">
+                        <div class="post-header">
+                            <div class="avatar">${post.userAvatar}</div>
+                            <div class="post-user-details">
+                                <h4>${post.userName}</h4>
+                                <span>@${post.userId}</span>
+                            </div>
+                        </div>
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-content">${post.content}</div>
+                        ${imgHtml}
+                        
+                        <div class="comment-section">
+                            <div id="comments-list-${post.id}">${commentsHtml || '<span style="color:#bbb; font-size:12px;">暫無留言</span>'}</div>
+                            ${commentFormHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- 功能：個人首頁 ---
+        function renderProfile() {
+            if(!currentUser) return switchPage('authPage');
+
+            document.getElementById('profileAvatar').innerText = currentUser.avatar;
+            document.getElementById('profileName').innerText = currentUser.name;
+            document.getElementById('profileId').innerText = '@' + currentUser.id;
+
+            const container = document.getElementById('myPostsContainer');
+            let posts = JSON.parse(localStorage.getItem('posts'));
+            let myPosts = posts.filter(p => p.userId === currentUser.id);
+
+            if (myPosts.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">你還沒有發布過貼文唷！</p>';
+                return;
+            }
+
+            container.innerHTML = myPosts.map(post => {
+                const imgHtml = post.imgUrl ? `<img class="post-img" src="${post.imgUrl}">` : '';
+                return `
+                    <div class="post-card" style="background: #FFFDF9;">
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-content">${post.content}</div>
+                        ${imgHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- 功能：發表留言 ---
+        function handleAddComment(postId) {
+            if (!currentUser) return alert('請先登入！');
+            
+            const inputEl = document.getElementById(`comment-input-${postId}`);
+            const text = inputEl.value.trim();
+            if(!text) return alert('請輸入留言內容唷！');
+
+            let posts = JSON.parse(localStorage.getItem('posts'));
+            let postIndex = posts.findIndex(p => p.id === postId);
+
+            if(postIndex !== -1) {
+                posts[postIndex].comments.push({
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    userAvatar: currentUser.avatar,
+                    text: text
+                });
+                localStorage.setItem('posts', JSON.stringify(posts));
+                inputEl.value = '';
+                renderLobby();
+            }
+        }
+
+        // 首次載入執行
+        updateNavbar();
+        renderLobby();
+        drawCaptcha(); // 初始化圖形驗證碼
+    </script>
+</body>
+</html>
